@@ -1,2 +1,3 @@
 zig-cache
 Session*.vim
+**/.*.sw*
