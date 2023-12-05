@@ -1,3 +1,5 @@
+//! https://adventofcode.com/2023/day/2
+
 const std = @import("std");
 const ascii = std.ascii;
 const fmt = std.fmt;

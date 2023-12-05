@@ -1,3 +1,5 @@
+//! https://adventofcode.com/2023/day/3
+
 const std = @import("std");
 const ascii = std.ascii;
 const fmt = std.fmt;
@@ -13,9 +15,7 @@ pub const PartNum = struct{
 };
 
 pub fn neighborSum(alloc: mem.Allocator, sym_x: usize, lines: []const []const u8) ![2]usize {
-    var sum: usize = 0;
     var part_num_list = std.ArrayList(PartNum).init(alloc);
-    
     for (lines) |line| {
         var idx: usize = 0;
         while (idx < line.len) {
@@ -26,30 +26,28 @@ pub fn neighborSum(alloc: mem.Allocator, sym_x: usize, lines: []const []const u8
             const end = (mem.indexOfNone(u8, line[idx..], "0123456789") orelse (line[idx..].len)) + idx;
             try part_num_list.append(.{
                 .x_start = idx -| 1,
-                .x_end = @min(end +| 1, line.len),
+                .x_end = end,
                 .value = try fmt.parseInt(usize, line[idx..end], 10),
             });
             idx = end;
         }
     }
+
     const part_nums = try part_num_list.toOwnedSlice();
     defer alloc.free(part_nums);
+    var sum: usize = 0;
     var ratio: usize = 1;
     var ratio_count: usize = 0;
     for (part_nums) |part_num| {
-        log.debug("- {any}", .{ part_num });
-        for (part_num.x_start..part_num.x_end) |x| {
-            if (sym_x != x) continue;
-            //log.debug("- Added: {d}", .{ part_num.value });
-            sum += part_num.value;
-            ratio *= if (lines[1][sym_x] == '*') part_num.value else 0;
-            ratio_count += 1;
-            break;
-        }
+        //log.debug("- {any}", .{ part_num });
+        if (sym_x < part_num.x_start or sym_x > part_num.x_end) continue;
+        log.debug("- Added: {d}", .{ part_num.value });
+        sum += part_num.value;
+        if (lines[1][sym_x] == '*') ratio *= part_num.value;
+        ratio_count += 1;
     }
     if (ratio_count != 2) ratio = 0;
-
-    log.debug("Ratio: {d}", .{ ratio });
+    log.debug("- Ratio: {d}", .{ ratio });
 
     return .{ sum, ratio };
 }
@@ -72,7 +70,6 @@ pub fn main() !void {
 
     var total_1: usize = 0;
     var total_2: usize = 0;
-    _ = &total_2;
 
     for (lines, 0..) |line, y| {
         for (line, 0..) |char, x| {
